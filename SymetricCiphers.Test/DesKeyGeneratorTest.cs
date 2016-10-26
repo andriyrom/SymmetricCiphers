@@ -2,10 +2,27 @@
 using SymetricCiphers.Common;
 using SymetricCiphers.DES;
 using System.Collections;
+using System;
 
 namespace SymetricCiphers.Test {
     [TestClass]
     public class DesKeyGeneratorTest {
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void KeyGeneratorConstuctorPassedShortKey() {
+            string stringKey = "00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001 11110001";
+            BitArray key = BitArrayExtension.ToBitArray(stringKey.Replace(" ", ""));
+            KeyGenerator keyGenerator = new KeyGenerator(key);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void KeyGeneratorConstuctorPassedLongKey() {
+            string stringKey = "00010011 00110100 01010111 01111001 10011011 10111100 11011111";
+            BitArray key = BitArrayExtension.ToBitArray(stringKey.Replace(" ", ""));
+            KeyGenerator keyGenerator = new KeyGenerator(key);
+        }
+
         [TestMethod]
         public void TestKeyGenerator() {
             string[] expectedSubKeys = new string[] {
