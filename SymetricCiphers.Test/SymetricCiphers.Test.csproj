@@ -50,6 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="BitArrayExtensionTest.cs" />
     <Compile Include="DesKeyGeneratorTest.cs" />
     <Compile Include="PermutatorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

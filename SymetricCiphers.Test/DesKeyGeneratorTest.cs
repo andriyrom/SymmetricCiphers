@@ -1,41 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SymetricCiphers.Common;
 using SymetricCiphers.DES;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SymetricCiphers.Test {
     [TestClass]
     public class DesKeyGeneratorTest {
-        [TestMethod]
-        public void TestCopyBitArray() {
-            BitArray input = new BitArray(new byte[] { 5 });
-            BitArray result = new BitArray(input.Length);
-            KeyGenerator.CopyBitArray(input, 0, result, 0, 4);
-            KeyGenerator.CopyBitArray(input, 0, result, 4, 4);
-            BitArray expected = new BitArray(new byte[] { 85 });
-            CollectionAssert.AreEqual(expected, result);
-        }
-
-        [TestMethod]
-        public void TestCycleLeftShiftOneStep() {
-            BitArray input = new BitArray(new byte[] { 11 });
-            BitArray result = KeyGenerator.CycleLeftShift(input, 1);            
-            BitArray expected = new BitArray(new byte[] { 133 });
-            CollectionAssert.AreEqual(expected, result);
-        }
-
-        [TestMethod]
-        public void TestCycleLeftShiftTwoStep() {
-            BitArray input = new BitArray(new byte[] { 11 });
-            BitArray result = KeyGenerator.CycleLeftShift(input, 2);
-            BitArray expected = new BitArray(new byte[] { 194 });
-            CollectionAssert.AreEqual(expected, result);
-        }
-
         [TestMethod]
         public void TestKeyGenerator() {
             string[] expectedSubKeys = new string[] {
@@ -57,35 +27,13 @@ namespace SymetricCiphers.Test {
                 "110010 110011 110110 001011 000011 100001 011111 110101"
             };
             string stringKey = "00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001";
-            BitArray key = StringToBitArray(stringKey.Replace(" ", ""));
+            BitArray key = BitArrayExtension.ToBitArray(stringKey.Replace(" ", ""));
             KeyGenerator keyGenerator = new KeyGenerator(key);
             for (int i = 0; i < KeyGenerator.NumberOfRounds; i++) {
                 BitArray result = keyGenerator.GetRoundKey(i);
-                BitArray expected = StringToBitArray(expectedSubKeys[i].Replace(" ", ""));
+                BitArray expected = BitArrayExtension.ToBitArray(expectedSubKeys[i].Replace(" ", ""));
                 CollectionAssert.AreEqual(expected, result, string.Format("Expected and result key number {0} do not match", i));
             }
-        }
-
-        private string BitArrayToString(BitArray array) {
-            StringBuilder bitString = new StringBuilder(array.Length);
-            foreach (bool bit in array) {
-                bitString.Append(bit ? "1" : "0");
-            }
-            return bitString.ToString();
-        }
-
-        private BitArray StringToBitArray(string bitString) {
-            BitArray array = new BitArray(bitString.Length);
-            for (int i = 0; i < bitString.Length; i++) {
-                switch (bitString[i]) {
-                    case '0': array[i] = false;
-                        break;
-                    case '1': array[i] = true;
-                        break;
-                    default: throw new ArgumentException("Input ");
-                }
-            }
-            return array;    
         }
     }
 }

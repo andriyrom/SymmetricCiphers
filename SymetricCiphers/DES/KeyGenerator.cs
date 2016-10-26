@@ -37,8 +37,8 @@ namespace SymetricCiphers.DES {
             FillPartsCD(permutatedKey);
             for (int i = 0; i < NumberOfRounds; i++) {
                 int shiftSize = GetShiftOnStep(i);
-                PartC = CycleLeftShift(PartC, shiftSize);
-                PartD = CycleLeftShift(PartD, shiftSize);
+                PartC = PartC.CycleLeftShift(shiftSize);
+                PartD = PartD.CycleLeftShift(shiftSize);
                 BitArray concatenatedCDParts = ConcatCDPArts();
                 RoundKeys[i] = finalPermutator.Permut(concatenatedCDParts);
             }
@@ -57,29 +57,16 @@ namespace SymetricCiphers.DES {
         }
 
         private void FillPartsCD(BitArray permutatedKey) {
-            CopyBitArray(permutatedKey, 0, PartC, 0, 28);
-            CopyBitArray(permutatedKey, 28, PartD, 0, 28);
+            permutatedKey.CopyBitArray(0, PartC, 0, 28);
+            permutatedKey.CopyBitArray(28, PartD, 0, 28);
         }
 
         private BitArray ConcatCDPArts() {
             int resultLength = PartC.Length + PartD.Length;
             var result = new BitArray(resultLength);
-            CopyBitArray(PartC, 0, result, 0, PartC.Length);
-            CopyBitArray(PartD, 0, result, PartC.Length, PartD.Length);
+            PartC.CopyBitArray(0, result, 0, PartC.Length);
+            PartD.CopyBitArray(0, result, PartC.Length, PartD.Length);
             return result;
-        }
-
-        internal static void CopyBitArray(BitArray source, int sourceIndex, BitArray destination, int destinationIndex, int length) {
-            for (int i = 0; i < length; i++) {
-                destination[destinationIndex + i] = source[sourceIndex + i];
-            }
-        }
-
-        internal static BitArray CycleLeftShift(BitArray array, int shiftSize) {
-            var result = new BitArray(array.Length);
-            CopyBitArray(array, shiftSize, result, 0, array.Length - shiftSize);
-            CopyBitArray(array, 0, result, array.Length - shiftSize, shiftSize);
-            return result;
-        }
+        }                
     }
 }
