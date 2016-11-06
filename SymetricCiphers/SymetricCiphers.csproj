@@ -41,7 +41,9 @@
   <ItemGroup>
     <Compile Include="Common\BitArrayExtension.cs" />
     <Compile Include="Common\Permutator.cs" />
+    <Compile Include="DES\DesCipher.cs" />
     <Compile Include="DES\KeyGenerator.cs" />
+    <Compile Include="ICipher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
