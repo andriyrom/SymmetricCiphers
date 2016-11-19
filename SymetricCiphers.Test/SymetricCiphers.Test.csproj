@@ -55,6 +55,7 @@
     <Compile Include="PermutatorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DesHelperTest.cs" />
+    <Compile Include="DesCipherTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SymetricCiphers\SymetricCiphers.csproj">
