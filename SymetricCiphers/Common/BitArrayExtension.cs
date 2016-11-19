@@ -38,5 +38,14 @@ namespace SymetricCiphers.Common {
             }
             return array;
         }
+
+        public static BitArray Revert(this BitArray array) {
+            int length = array.Length;
+            var result = new BitArray(length);            
+            for (int i = 0; i < length; i++) {
+                result[i] = array[length - i - 1];
+            }
+            return result;
+        }
     }
 }

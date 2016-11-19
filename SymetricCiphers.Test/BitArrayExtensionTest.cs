@@ -30,5 +30,29 @@ namespace SymetricCiphers.Test {
             BitArray expected = new BitArray(new byte[] { 194 });
             CollectionAssert.AreEqual(expected, result);
         }
+
+        [TestMethod]
+        public void TestRevertWithOnesArray() {
+            BitArray input = new BitArray(new byte[] { 0xFF });
+            BitArray result = input.Revert();
+            BitArray expected = new BitArray(new byte[] { 0xFF });
+            CollectionAssert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void TestRevertWithSymetricArray() {
+            BitArray input = new BitArray(new byte[] { 0x0F });
+            BitArray result = input.Revert();
+            BitArray expected = new BitArray(new byte[] { 0xF0 });
+            CollectionAssert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void TestRevertWithAsymetricArray() {
+            BitArray input = new BitArray(new byte[] { 0xC4 });
+            BitArray result = input.Revert();
+            BitArray expected = new BitArray(new byte[] { 0x23 });
+            CollectionAssert.AreEqual(expected, result);
+        }
     }
 }
