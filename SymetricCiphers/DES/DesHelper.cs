@@ -1,5 +1,6 @@
 ﻿using SymetricCiphers.Common;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,11 +8,6 @@ using System.Threading.Tasks;
 
 namespace SymetricCiphers.DES {
     internal static class DesHelper {
-        public static readonly Permutator InitialPermutator = new Permutator(InitialPermutation);
-        public static readonly Permutator FinalPermutator = new Permutator(FinalPermutation);
-        public static readonly Permutator PBlockExtensionPermutator = new Permutator(PBlockExtensionPermutation);
-        public static readonly Permutator PBlockStraightPermutator = new Permutator(PBlockStraightPermutation);
-
         private static readonly int[] InitialPermutation = 
             new int[] { 57, 49, 41, 33, 25, 17, 9, 1, 59, 51, 43, 25, 27, 19, 11, 3,
                         61, 53, 45, 37, 29, 21, 13, 5, 63, 55, 47, 39, 31, 23, 15, 7,
@@ -34,8 +30,35 @@ namespace SymetricCiphers.DES {
            new int[] { 15, 6, 19, 20, 28, 11, 27, 16, 0, 14, 22, 25, 4, 17, 30, 9,
                        1, 7, 23, 13, 31, 26, 2, 8, 18, 12, 29, 5, 21, 10, 3, 24 };
 
-        internal class SBoxes {
-            private static readonly byte[][][] SBoxes = new byte[][][] { 
+        private static readonly Permutator InitialPermutator = new Permutator(InitialPermutation);
+        private static readonly Permutator FinalPermutator = new Permutator(FinalPermutation);
+        private static readonly Permutator PBlockExtensionPermutator = new Permutator(PBlockExtensionPermutation);
+        private static readonly Permutator PBlockStraightPermutator = new Permutator(PBlockStraightPermutation);
+
+        public static BitArray Function(BitArray rightPart, BitArray roundKey) {
+            BitArray extendedRightPart = PBlockExtensionPermutator.Permut(rightPart);
+            BitArray sBoxesInput = extendedRightPart.Xor(roundKey);
+            BitArray result = new BitArray(32);
+            BitArray rowBits = new BitArray(2);
+            BitArray columnBits = new BitArray(4);
+            int[] rowIndex = new int[1];
+            int[] columnIndex = new int[1];
+            for (int i = 0; i < 8; i++) {
+                int currentMainArrayIndex = i * 6;
+                rowBits[0] = sBoxesInput[currentMainArrayIndex];
+                rowBits[1] = sBoxesInput[currentMainArrayIndex + 5];
+                sBoxesInput.CopyBitArray(currentMainArrayIndex + 1, columnBits, 0, 4);
+                rowBits.Revert().CopyTo(rowIndex, 0);
+                columnBits.Revert().CopyTo(columnIndex, 0);
+                BitArray sBoxValue = SBoxes.GetValue(i, rowIndex[0], columnIndex[0]).Revert();
+                int currentResultArrayInxex = i * 4;
+                sBoxValue.CopyBitArray(0, result, currentResultArrayInxex, 4);
+            }
+            return PBlockStraightPermutator.Permut(result);
+        }
+
+        private class SBoxes {
+            private static readonly byte[][][] SBoxesTable = new byte[][][] { 
                 new byte[][] { 
                     new byte[] { 14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7 }, 
                     new byte[] { 0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8 },
@@ -78,8 +101,12 @@ namespace SymetricCiphers.DES {
                     new byte[] { 2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11 } },
             };
 
-            public static byte GetValue(int boxNumber, int row, int column) {
-                return SBoxes[boxNumber][row][column];
+            public static BitArray GetValue(int boxNumber, int row, int column) {
+                byte value = SBoxesTable[boxNumber][row][column];
+                BitArray temp = new BitArray(new byte[]{value});
+                BitArray result = new BitArray(4);
+                temp.CopyBitArray(0, result, 0, result.Length);
+                return result;
             }
         }  
     }
