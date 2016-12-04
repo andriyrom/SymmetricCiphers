@@ -33,35 +33,7 @@ namespace SymetricCiphers.DES {
             }
             return result;
         }
-
-        private byte[] EncryptBlock(byte[] block) {
-            BitArray result = DesRound(block);
-            return result.SaveInBigEndian();
-        }
-
-        private BitArray DesRound(byte[] block) {
-            BitArray rigthPart;
-            BitArray leftPart;
-            BitArray inputBlock = BitArrayExtension.ReadInBigEndian(block);
-            BitArray permutatedBlock = DesHelper.InitialPermutator.Permut(inputBlock);
-
-            GetBlockParts(permutatedBlock, out leftPart, out rigthPart);
-            for (int round = 0; round < KeyGenerator.NumberOfRounds; round++) {
-                BitArray desFunction = DesHelper.Function(rigthPart, RoundKeys.GetRoundKey(round));
-                BitArray newRightPart = leftPart.Xor(desFunction);
-                leftPart = rigthPart;
-                rigthPart = newRightPart;
-            }
-            BitArray result = new BitArray(leftPart.Length + rigthPart.Length);
-            rigthPart.CopyBitArray(0, result, 0, BlockPartLengthBits);
-            leftPart.CopyBitArray(0, result, BlockPartLengthBits, BlockPartLengthBits);            
-            return DesHelper.FinalPermutator.Permut(result);
-        }  
-
-        public byte[] Decrypt(byte[] encryptedMessage) {
-            throw new NotImplementedException();
-        }
-
+        
         private byte[] AlignMessage(byte[] message) {
             int tail = message.Length % BlockLengthBytes;
             if (tail == 0) { return message; }
@@ -70,13 +42,51 @@ namespace SymetricCiphers.DES {
             alignedMessage.Initialize();
             message.CopyTo(alignedMessage, 0);
             return alignedMessage;
+        }       
+        
+        private byte[] EncryptBlock(byte[] block) {
+            BitArray result = ExecuteDesRounds(block, Mode.Encrypt);
+            return result.SaveInBigEndian();
+        }
+
+        private BitArray ExecuteDesRounds(byte[] block, Mode mode) {
+            BitArray rigthPart;
+            BitArray leftPart;
+            BitArray inputBlock = BitArrayExtension.ReadInBigEndian(block);
+            BitArray permutatedBlock = DesHelper.InitialPermutator.Permut(inputBlock);
+
+            GetBlockParts(permutatedBlock, out leftPart, out rigthPart);
+            for (int round = 0; round < KeyGenerator.NumberOfRounds; round++) {
+                BitArray desFunction = DesHelper.Function(rigthPart, GetRoundKey(round, mode));
+                BitArray newRightPart = leftPart.Xor(desFunction);
+                leftPart = rigthPart;
+                rigthPart = newRightPart;
+            }
+            BitArray result = new BitArray(leftPart.Length + rigthPart.Length);
+            rigthPart.CopyBitArray(0, result, 0, BlockPartLengthBits);
+            leftPart.CopyBitArray(0, result, BlockPartLengthBits, BlockPartLengthBits);            
+            return DesHelper.FinalPermutator.Permut(result);
         }
 
         private void GetBlockParts(BitArray block, out BitArray leftPart, out BitArray rightPart) {
             leftPart = new BitArray(BlockPartLengthBits);
             rightPart = new BitArray(BlockPartLengthBits);
             block.CopyBitArray(0, leftPart, 0, BlockPartLengthBits);
-            block.CopyBitArray(BlockPartLengthBits, rightPart, 0, BlockPartLengthBits);            
+            block.CopyBitArray(BlockPartLengthBits, rightPart, 0, BlockPartLengthBits);
+        }
+
+        private BitArray GetRoundKey(int roundNumber, Mode mode) {
+            int roundKeyIndex = mode == Mode.Decrypt ? KeyGenerator.NumberOfRounds - (roundNumber + 1) : roundNumber;
+            return RoundKeys.GetRoundKey(roundKeyIndex);
+        }
+
+        public byte[] Decrypt(byte[] encryptedMessage) {
+            throw new NotImplementedException();
+        }
+
+        private enum Mode {
+            Encrypt = 0,
+            Decrypt = 1
         }
     }
 }
