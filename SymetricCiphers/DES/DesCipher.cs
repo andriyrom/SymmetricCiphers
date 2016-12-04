@@ -15,7 +15,7 @@ namespace SymetricCiphers.DES {
         private KeyGenerator RoundKeys;
         public DesCipher(byte[] key) {
             Key = key;
-            RoundKeys = new KeyGenerator(ReadBytesInBigEndian(key));
+            RoundKeys = new KeyGenerator(BitArrayExtension.ReadInBigEndian(key));
         }
 
         public byte[] Key { get; private set; }
@@ -36,14 +36,13 @@ namespace SymetricCiphers.DES {
 
         private byte[] EncryptBlock(byte[] block) {
             BitArray result = DesRound(block);
-            return SaveBitArrayInBigEndian(result);
+            return result.SaveInBigEndian();
         }
-
 
         private BitArray DesRound(byte[] block) {
             BitArray rigthPart;
             BitArray leftPart;
-            BitArray inputBlock = ReadBytesInBigEndian(block);
+            BitArray inputBlock = BitArrayExtension.ReadInBigEndian(block);
             BitArray permutatedBlock = DesHelper.InitialPermutator.Permut(inputBlock);
 
             GetBlockParts(permutatedBlock, out leftPart, out rigthPart);
@@ -78,27 +77,6 @@ namespace SymetricCiphers.DES {
             rightPart = new BitArray(BlockPartLengthBits);
             block.CopyBitArray(0, leftPart, 0, BlockPartLengthBits);
             block.CopyBitArray(BlockPartLengthBits, rightPart, 0, BlockPartLengthBits);            
-        }
-
-        private BitArray ReadBytesInBigEndian(byte[] input) {
-            BitArray result = new BitArray(input.Length * BitsInByte);
-            for (int i = 0; i < input.Length; i++) {
-                BitArray temp = new BitArray(new byte[] { input[i] });
-                temp.Revert().CopyBitArray(0, result, i * temp.Length, temp.Length);
-            }
-            return result;
-        }
-
-        private byte[] SaveBitArrayInBigEndian(BitArray input) {
-            byte[] result = new byte[input.Length / BitsInByte];
-            BitArray tempBitArray = new BitArray(BitsInByte);
-            byte[] tempByte = new byte[1];
-            for (int i = 0; i < result.Length; i++) {
-                input.CopyBitArray(i * BitsInByte, tempBitArray, 0, BitsInByte);
-                tempBitArray.Revert().CopyTo(tempByte, 0);
-                result[i] = tempByte[0];
-            }
-            return result;
         }
     }
 }

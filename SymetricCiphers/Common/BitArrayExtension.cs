@@ -4,6 +4,7 @@ using System.Text;
 
 namespace SymetricCiphers.Common {
     public static class BitArrayExtension {
+        public static readonly int BitsInByte = 8;
         public static BitArray CycleLeftShift(this BitArray array, int shiftSize) {
             var result = new BitArray(array.Length);
             array.CopyBitArray(shiftSize, result, 0, array.Length - shiftSize);
@@ -37,6 +38,28 @@ namespace SymetricCiphers.Common {
                 }
             }
             return array;
+        }
+
+        public static BitArray ReadInBigEndian(byte[] input) {
+            BitArray result = new BitArray(input.Length * BitsInByte);
+            for (int i = 0; i < input.Length; i++) {
+                BitArray temp = new BitArray(new byte[] { input[i] });
+                temp.Revert().CopyBitArray(0, result, i * temp.Length, temp.Length);
+            }
+            return result;
+        }
+
+
+        public static byte[] SaveInBigEndian(this BitArray input) {
+            byte[] result = new byte[input.Length / BitsInByte];
+            BitArray tempBitArray = new BitArray(BitsInByte);
+            byte[] tempByte = new byte[1];
+            for (int i = 0; i < result.Length; i++) {
+                input.CopyBitArray(i * BitsInByte, tempBitArray, 0, BitsInByte);
+                tempBitArray.Revert().CopyTo(tempByte, 0);
+                result[i] = tempByte[0];
+            }
+            return result;
         }
 
         public static BitArray Revert(this BitArray array) {

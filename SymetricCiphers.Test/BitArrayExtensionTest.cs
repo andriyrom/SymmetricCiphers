@@ -54,5 +54,23 @@ namespace SymetricCiphers.Test {
             BitArray expected = new BitArray(new byte[] { 0x23 });
             CollectionAssert.AreEqual(expected, result);
         }
+
+        [TestMethod]
+        public void TestReadInBigEndian() {
+            byte[] input = new byte[] { 143, 3 };
+            string expectedResult = "10001111 00000011".Replace(" ", "");
+            BitArray expected = BitArrayExtension.ToBitArray(expectedResult);
+            BitArray result = BitArrayExtension.ReadInBigEndian(input);
+            CollectionAssert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void TestSaveInBigEndian() {
+            string inputString = "10001111 00000011".Replace(" ", "");
+            BitArray input = BitArrayExtension.ToBitArray(inputString);
+            byte[] expected = new byte[] { 143, 3 };
+            byte[] result = input.SaveInBigEndian();
+            CollectionAssert.AreEqual(expected, result);
+        }
     }
 }
