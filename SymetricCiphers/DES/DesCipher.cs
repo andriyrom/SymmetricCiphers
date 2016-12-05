@@ -21,12 +21,20 @@ namespace SymetricCiphers.DES {
         public byte[] Key { get; private set; }
 
         public byte[] Encrypt(byte[] message) {
-            CheckMessageLength(message);            
+            return ApplyCipher(message, Mode.Encrypt);
+        }
+
+        public byte[] Decrypt(byte[] encryptedMessage) {
+            return ApplyCipher(encryptedMessage, Mode.Decrypt);
+        }
+
+        private byte[] ApplyCipher(byte[] message, Mode mode) {
+            CheckMessageLength(message);
             List<byte[]> blocks = GetBlocks(message);
             byte[] result = new byte[message.Length];
             for (int blockIndex = 0; blockIndex < blocks.Count; blockIndex++) {
                 int blockFirstByteIndex = blockIndex * BlockLengthBytes;
-                byte[] encryptedBlock = EncryptBlock(blocks[blockIndex]);
+                byte[] encryptedBlock = ApplyCipherToBlock(blocks[blockIndex], mode);
                 encryptedBlock.CopyTo(result, blockFirstByteIndex);
             }
             return result;
@@ -51,8 +59,8 @@ namespace SymetricCiphers.DES {
             return blocks;
         }
 
-        private byte[] EncryptBlock(byte[] block) {
-            BitArray result = ExecuteDesRounds(block, Mode.Encrypt);
+        private byte[] ApplyCipherToBlock(byte[] block, Mode mode) {
+            BitArray result = ExecuteDesRounds(block, mode);
             return result.SaveInBigEndian();
         }
 
@@ -85,11 +93,7 @@ namespace SymetricCiphers.DES {
         private BitArray GetRoundKey(int roundNumber, Mode mode) {
             int roundKeyIndex = mode == Mode.Decrypt ? KeyGenerator.NumberOfRounds - (roundNumber + 1) : roundNumber;
             return RoundKeys.GetRoundKey(roundKeyIndex);
-        }
-
-        public byte[] Decrypt(byte[] encryptedMessage) {
-            throw new NotImplementedException();
-        }
+        }       
 
         private enum Mode {
             Encrypt = 0,
