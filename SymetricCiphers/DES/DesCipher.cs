@@ -21,15 +21,13 @@ namespace SymetricCiphers.DES {
         public byte[] Key { get; private set; }
 
         public byte[] Encrypt(byte[] message) {
-            CheckMessageLength(message);
+            CheckMessageLength(message);            
+            List<byte[]> blocks = GetBlocks(message);
             byte[] result = new byte[message.Length];
-            int blockCount = message.Length / BlockLengthBytes;
-            for (int i = 0; i < blockCount; i++) {
-                byte[] block = new byte[BlockLengthBytes];
-                int blockStartIndex = i * BlockLengthBytes;
-                Array.Copy(message, blockStartIndex, block, 0, BlockLengthBytes);
-                byte[] encryptedBlock = EncryptBlock(block);
-                encryptedBlock.CopyTo(result, blockStartIndex);
+            for (int blockIndex = 0; blockIndex < blocks.Count; blockIndex++) {
+                int blockFirstByteIndex = blockIndex * BlockLengthBytes;
+                byte[] encryptedBlock = EncryptBlock(blocks[blockIndex]);
+                encryptedBlock.CopyTo(result, blockFirstByteIndex);
             }
             return result;
         }
@@ -39,8 +37,20 @@ namespace SymetricCiphers.DES {
                 string errorMessage = "The lenght of message should be multiple of {0} in bytes. Now the lenght is {1} bytes.";
                 throw new ArgumentException(string.Format(errorMessage, BlockLengthBytes, message.Length));
             }
-        }       
-        
+        }
+
+        private List<byte[]> GetBlocks(byte[] message) {
+            List<byte[]> blocks = new List<byte[]>();
+            int blockCount = message.Length / BlockLengthBytes;
+            for (int i = 0; i < blockCount; i++) {
+                byte[] block = new byte[BlockLengthBytes];
+                int blockStartIndex = i * BlockLengthBytes;
+                Array.Copy(message, blockStartIndex, block, 0, BlockLengthBytes);
+                blocks.Add(block);
+            }
+            return blocks;
+        }
+
         private byte[] EncryptBlock(byte[] block) {
             BitArray result = ExecuteDesRounds(block, Mode.Encrypt);
             return result.SaveInBigEndian();
