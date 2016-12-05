@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SymetricCiphers {
-    interface ICipher {
+    public interface ICipher {
         byte[] Key { get; }
 
         byte[] Encrypt(byte[] message);
