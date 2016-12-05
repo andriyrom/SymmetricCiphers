@@ -21,7 +21,7 @@ namespace SymetricCiphers.DES {
         public byte[] Key { get; private set; }
 
         public byte[] Encrypt(byte[] message) {
-            message = AlignMessage(message);
+            CheckMessageLength(message);
             byte[] result = new byte[message.Length];
             int blockCount = message.Length / BlockLengthBytes;
             for (int i = 0; i < blockCount; i++) {
@@ -34,14 +34,11 @@ namespace SymetricCiphers.DES {
             return result;
         }
         
-        private byte[] AlignMessage(byte[] message) {
-            int tail = message.Length % BlockLengthBytes;
-            if (tail == 0) { return message; }
-            int alignedMessageLength = (message.Length / BlockLengthBytes + 1) * BlockLengthBytes;
-            byte[] alignedMessage = new byte[alignedMessageLength];
-            alignedMessage.Initialize();
-            message.CopyTo(alignedMessage, 0);
-            return alignedMessage;
+        private void CheckMessageLength(byte[] message) {
+            if (message.Length % BlockLengthBytes != 0) {
+                string errorMessage = "The lenght of message should be multiple of {0} in bytes. Now the lenght is {1} bytes.";
+                throw new ArgumentException(string.Format(errorMessage, BlockLengthBytes, message.Length));
+            }
         }       
         
         private byte[] EncryptBlock(byte[] block) {
